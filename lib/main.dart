@@ -11,22 +11,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'URL Launcher',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.red,
       ),
-      home: const HomePage(),
+      home: HomePage(),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+class HomePage extends StatelessWidget {
+  final TextEditingController _urlController = TextEditingController();
 
-  @override
-  HomePageState createState() => HomePageState();
-}
-
-class HomePageState extends State<HomePage> {
-  final TextEditingController _controller = TextEditingController();
+   HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +42,11 @@ class HomePageState extends State<HomePage> {
             ),
           ),
           TextField(
-            controller: _controller,
-            decoration: const InputDecoration(hintText: 'Enter a URL'),
+            controller: _urlController,
+            enabled: true,
+            decoration: const InputDecoration(
+              hintText: 'Enter a URL',
+            ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -57,7 +55,9 @@ class HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => WebViewPage(url: _controller.text),
+                  builder: (context) => WebViewPage(
+                    url: _urlController.text,
+                  ),
                 ),
               );
             },
@@ -84,17 +84,27 @@ class WebViewPageState extends State<WebViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // remove back button
         title: Text(widget.url),
       ),
-      body: WebView(
-        initialUrl:
-            widget.url.startsWith("http") ? widget.url : "http://${widget.url}",
-        javascriptMode: JavascriptMode.unrestricted,
-        onWebViewCreated: (WebViewController webViewController) {
-          setState(() {
-            controller = webViewController;
-          });
+      body: WillPopScope(
+        onWillPop: () async {
+          if (await controller.canGoBack()) {
+            controller.goBack();
+            return false;
+          } else {
+            return true;
+          }
         },
+        child: WebView(
+          initialUrl: widget.url,
+          javascriptMode: JavascriptMode.unrestricted,
+          onWebViewCreated: (WebViewController webViewController) {
+            setState(() {
+              controller = webViewController;
+            });
+          },
+        ),
       ),
     );
   }
