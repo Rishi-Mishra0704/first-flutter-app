@@ -8,26 +8,27 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const url = 'https://test.proxydigitalsolutions.com/';
+
     return MaterialApp(
-      title: 'URL Launcher',
+      title: "ZNBS",
       theme: ThemeData(
         primarySwatch: Colors.red,
       ),
-      home: HomePage(),
+      home: url.isEmpty ? const HomePage() : const WebViewPage(url: url),
     );
   }
 }
 
 class HomePage extends StatelessWidget {
-  final TextEditingController _urlController = TextEditingController();
-
-   HomePage({Key? key}) : super(key: key);
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('URL Launcher'),
+        title: const Text('ZNBS'),
+        leading: Image.asset('assets/images/logo.png'),
       ),
       body: Column(
         children: <Widget>[
@@ -41,26 +42,11 @@ class HomePage extends StatelessWidget {
               ),
             ),
           ),
-          TextField(
-            controller: _urlController,
-            enabled: true,
-            decoration: const InputDecoration(
-              hintText: 'Enter a URL',
+          const TextField(
+            readOnly: true,
+            decoration:  InputDecoration(
+              hintText: 'https://test.proxydigitalsolutions.com/',
             ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            child: const Text('Launch URL'),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => WebViewPage(
-                    url: _urlController.text,
-                  ),
-                ),
-              );
-            },
           ),
         ],
       ),
@@ -82,21 +68,22 @@ class WebViewPageState extends State<WebViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false, // remove back button
-        title: Text(widget.url),
-      ),
-      body: WillPopScope(
-        onWillPop: () async {
-          if (await controller.canGoBack()) {
-            controller.goBack();
-            return false;
-          } else {
-            return true;
-          }
-        },
-        child: WebView(
+    return WillPopScope(
+      onWillPop: () async {
+        if (await controller.canGoBack()) {
+          controller.goBack();
+          return false;
+        } else {
+          return true;
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const SizedBox.shrink(),
+          toolbarHeight: 0,
+          elevation: 0,
+        ),
+        body: WebView(
           initialUrl: widget.url,
           javascriptMode: JavascriptMode.unrestricted,
           onWebViewCreated: (WebViewController webViewController) {
